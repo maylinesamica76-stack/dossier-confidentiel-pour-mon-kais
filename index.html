@@ -434,7 +434,7 @@ function runLights(){
   let i = 0;
   const step = () => {
     if (state !== 'lights') return;
-    if (i < 5){ bs[i++].classList.add('on'); playSound('feu'); setTimeout(step, 550); return; }
+    if (i < 5){ bs[i++].classList.add('on'); playSound('feu'); setTimeout(step, 1000); return; }
     setTimeout(() => {
       if (state !== 'lights') return;
       bs.forEach(b => b.classList.remove('on')); txt.textContent = 'Go !'; playSound('depart');
