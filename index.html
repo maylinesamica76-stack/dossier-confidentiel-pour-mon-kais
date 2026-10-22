@@ -525,7 +525,7 @@ $('#retry').addEventListener('click', startRace);
 let rState = 'idle', rTimer = null, rStart = 0;
 const rLights = $('#rLights');
 function lightsSet(n){ [...rLights.children].forEach((b, i) => b.classList.toggle('on', i < n)); }
-function startReact(){ show('react'); resetReact(); }
+function startReact(){ unlockAudio(); prepareSounds(); show('react'); resetReact(); }
 function resetReact(){
   clearTimeout(rTimer); rState = 'idle'; lightsSet(0);
   $('#rMsg').textContent = 'Touche l’écran pour lancer les feux, puis touche à nouveau dès qu’ils s’éteignent. Il faut moins de 0,350 s.';
@@ -537,8 +537,8 @@ function reactTap(){
     let n = 0;
     const step = () => {
       if (rState !== 'arming') return;
-      lightsSet(++n);
-      if (n < 5) rTimer = setTimeout(step, 600);
+      lightsSet(++n); playSound('feu');
+      if (n < 5) rTimer = setTimeout(step, 1000);
       else rTimer = setTimeout(() => { if (rState !== 'arming') return; lightsSet(0); rState = 'go'; rStart = performance.now(); }, 800 + Math.random() * 1800);
     };
     rTimer = setTimeout(step, 500);
@@ -547,7 +547,7 @@ function reactTap(){
     $('#rMsg').textContent = 'Faux départ : tu es parti avant l’extinction des feux.';
     $('#rRetry').hidden = false;
   } else if (rState === 'go'){
-    const ms = performance.now() - rStart; rState = 'done';
+    const ms = performance.now() - rStart; rState = 'done'; playSound('depart');
     $('#rTime').textContent = (ms / 1000).toFixed(3).replace('.', ',') + ' s';
     if (ms <= 350){ $('#rMsg').textContent = 'Départ parfait.'; setTimeout(() => missionWon(1), 1300); }
     else { $('#rMsg').textContent = 'Trop lent : il faut moins de 0,350 s.'; $('#rRetry').hidden = false; }
