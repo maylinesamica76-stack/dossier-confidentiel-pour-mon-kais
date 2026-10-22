@@ -138,7 +138,8 @@ canvas{flex:1;width:100%;min-height:0;display:block;touch-action:manipulation;cu
     <span class="stamp display">Top secret</span>
     <p class="ref">Dossier K-24. Destinataire : agent Kaïs</p>
     <div class="typed" id="typed" aria-live="polite"></div>
-    <p class="skip" id="skipHint">Touche le dossier pour tout afficher</p>
+    <button class="go" id="openFile">Ouvrir le dossier</button>
+    <p class="skip" id="skipHint" hidden>Touche le dossier pour tout afficher</p>
     <button class="go" id="accept" hidden>Accepter la mission</button>
   </div>
 </section>
@@ -325,8 +326,8 @@ async function typeIntro(){
   for (const line of lines){
     const p = document.createElement('p'); box.appendChild(p);
     if (reduce || skip){ p.textContent = line; continue; }
-    for (const ch of line){ if (skip){ p.textContent = line; break; } p.textContent += ch; await wait(24); }
-    if (!skip) await wait(260);
+    for (const ch of line){ if (skip){ p.textContent = line; break; } p.textContent += ch; if (ch !== ' ') typeClick(); await wait(24); }
+    if (!skip){ ding(); await wait(260); }
   }
   typingDone = true; $('#skipHint').hidden = true;
   $('#accept').hidden = false; $('#accept').focus({preventScroll:true});
