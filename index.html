@@ -334,7 +334,27 @@ async function typeIntro(){
 }
 $('#introFolder').addEventListener('click', () => { if (!typingDone) skip = true; });
 $('#accept').addEventListener('click', e => { e.stopPropagation(); goHub(); });
-typeIntro();
+/* Son de machine à écrire */
+let noiseBuf = null;
+function typeClick(){
+  if (!actx) return;
+  if (!noiseBuf){
+    noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.03, actx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
+  }
+  const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+  src.buffer = noiseBuf; src.playbackRate.value = 0.8 + Math.random() * 0.4;
+  f.type = 'bandpass'; f.frequency.value = 2500 + Math.random() * 1500;
+  g.gain.value = 0.5;
+  src.connect(f).connect(g).connect(actx.destination); src.start();
+}
+function ding(){ tone(1568, 400, 'sine'); }
+$('#openFile').addEventListener('click', e => {
+  e.stopPropagation(); unlockAudio();
+  $('#openFile').hidden = true; $('#skipHint').hidden = false;
+  typeIntro();
+});
 
 /* ---------- Mission 1 : course ---------- */
 const cv = $('#cv'), ctx = cv.getContext('2d');
