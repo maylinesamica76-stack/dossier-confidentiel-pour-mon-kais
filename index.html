@@ -407,8 +407,17 @@ const playerY = () => H - carSize().h - 24;
 const speed = () => H * (0.6 + 0.6 * Math.min(t / DURATION, 1));
 function updHud(){ $('#lives').textContent = '♥'.repeat(lives) + '♡'.repeat(3 - lives); }
 
+/* Bip des feux de départ */
+function beep(freq, ms){
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime;
+  o.type = 'triangle'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.01);
+  g.gain.setValueAtTime(0.2, t0 + ms / 1000 - 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.02);
+}
 function startRace(){
-  show('race'); $('#failOv').classList.remove('show'); resize();
+  unlockAudio(); show('race'); $('#failOv').classList.remove('show'); resize();
   lane = 1; px = laneX(1); obs = []; t = 0; spawnT = 1; lives = 3; inv = 0; scroll = 0;
   $('#bar').style.width = '0%'; updHud(); state = 'lights'; draw(); runLights();
 }
@@ -418,10 +427,10 @@ function runLights(){
   let i = 0;
   const step = () => {
     if (state !== 'lights') return;
-    if (i < 5){ bs[i++].classList.add('on'); setTimeout(step, 550); return; }
+    if (i < 5){ bs[i++].classList.add('on'); beep(440, 200); setTimeout(step, 550); return; }
     setTimeout(() => {
       if (state !== 'lights') return;
-      bs.forEach(b => b.classList.remove('on')); txt.textContent = 'Go !';
+      bs.forEach(b => b.classList.remove('on')); txt.textContent = 'Go !'; beep(880, 600);
       setTimeout(() => { if (state !== 'lights') return; ov.classList.remove('show'); state = 'run'; last = performance.now(); requestAnimationFrame(loop); }, 450);
     }, 500);
   };
