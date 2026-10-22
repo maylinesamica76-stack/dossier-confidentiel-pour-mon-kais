@@ -410,7 +410,7 @@ function updHud(){ $('#lives').textContent = '♥'.repeat(lives) + '♡'.repeat(
 /* Bip des feux de départ */
 /* Sons mp3 (fichiers à côté de index.html) */
 const SONS = {};
-['feu', 'depart'].forEach(n => fetch(n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => { if (b) SONS[n] = b; }).catch(() => {}));
+['feu', 'depart', 'rouge', 'jaune', 'blanc', 'bleu', 'erreur'].forEach(n => fetch(n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => { if (b) SONS[n] = b; }).catch(() => {}));
 function prepareSounds(){
   if (!actx) return;
   Object.keys(SONS).forEach(n => {
@@ -422,6 +422,7 @@ function playSound(n, vol = 1){
   const src = actx.createBufferSource(), g = actx.createGain();
   src.buffer = SONS[n]; g.gain.value = vol;
   src.connect(g).connect(actx.destination); src.start();
+  return src;
 }
 function startRace(){
   unlockAudio(); prepareSounds(); show('race'); $('#failOv').classList.remove('show'); resize();
@@ -579,12 +580,20 @@ function tone(freq, ms, type = 'triangle'){
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
   o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
 }
-$('#sStart').addEventListener('click', () => { unlockAudio(); $('#sStart').hidden = true; newRound(); });
+$('#sStart').addEventListener('click', () => { unlockAudio(); prepareSounds();  $('#sStart').hidden = true; newRound(); });
 function newRound(){
   seq = Array.from({ length: LENGTHS[round] }, () => Math.floor(Math.random() * 4));
   $('#sRound').textContent = `Message ${round + 1} sur 3`; playSeq();
 }
-async function flash(i, ms){ tone(NOTES[i], ms); pads[i].classList.add('lit'); await wait(ms); pads[i].classList.remove('lit'); }
+const PAD_SONS = ['rouge', 'jaune', 'blanc', 'bleu'];
+let padSrc = null;
+function stopPadSound(){ try { if (padSrc) padSrc.stop(); } catch(e){} padSrc = null; }
+function padSound(i, ms){
+  stopPadSound();
+  padSrc = playSound(PAD_SONS[i]);
+  if (!padSrc) tone(NOTES[i], ms);
+}
+async function flash(i, ms){ padSound(i, ms); pads[i].classList.add('lit'); await wait(ms); pads[i].classList.remove('lit'); }
 async function playSeq(){
   sState = 'play'; $('#sMsg').textContent = 'Écoute bien…'; await wait(700);
   for (const c of seq){ if (sState !== 'play') return; await flash(c, 450); await wait(200); }
@@ -596,7 +605,7 @@ pads.forEach((p, i) => p.addEventListener('click', () => {
   unlockAudio();
   if (i !== seq[pos]){
     pads[i].classList.add('lit'); setTimeout(() => pads[i].classList.remove('lit'), 180);
-    tone(110, 600, 'sawtooth');
+  stopPadSound(); if (!playSound('erreur')) tone(110, 600, 'sawtooth');
     sState = 'idle'; round = 0;
     $('#sMsg').textContent = 'Signal brouillé. Recommence depuis le premier message.';
     $('#sStart').textContent = 'Réessayer'; $('#sStart').hidden = false; return;
