@@ -120,6 +120,10 @@ canvas{flex:1;width:100%;min-height:0;display:block;touch-action:manipulation;cu
 .big{font-size:clamp(2.2rem,9.5vw,3.2rem);line-height:.98;color:var(--rosso);margin:0 0 18px}
 .fade{opacity:0;transform:translateY(10px);transition:opacity .7s,transform .7s}
 .fade.in{opacity:1;transform:none}
+.gift{display:block;width:100%;height:auto;margin:4px 0 22px;background:#fff;padding:8px;border-radius:3px;
+  box-shadow:0 10px 24px rgba(0,0,0,.35);transform:rotate(1.5deg)}
+.gift.fade{transform:translateY(16px) rotate(1.5deg) scale(.96);transition:opacity 1.2s,transform 1.2s}
+.gift.fade.in{transform:rotate(1.5deg)}
 .msg{line-height:1.6;margin:0 0 6px}
 .sign{margin:0 0 8px}
 
@@ -249,13 +253,7 @@ canvas{flex:1;width:100%;min-height:0;display:block;touch-action:manipulation;cu
   <div class="folder">
     <span class="stamp display slam" id="declass">Déclassifié</span>
     <p class="ref">Dossier K-24. Consignes : garder les mains sur le volant, le pied sur l’accélérateur… et revenir en un seul morceau STP !</p>
-    <div class="fields">
-      <div><span class="k">Mission</span><span class="r">Piloter une Ferrari 296 GTB</span></div>
-      <div><span class="k">Terrain</span><span class="r">5 tours de 2 km</span></div>
-      <div><span class="k">Puissance</span><span class="r">830 chevaux</span></div>
-      <div><span class="k">Pilote</span><span class="r">Kaïs AKA Hamilton</span></div>
-    </div>
-    <h1 class="big display fade" id="bigReveal">Tu vas piloter une Ferrari 296 GTB sur circuit.</h1>
+    <img class="gift fade" id="giftImg" src="cadeau.jpg" alt="Ton cadeau" onerror="this.hidden = true">
     <div class="fade" id="msgBox">
       <p class="msg">Joyeux anniversaire, agent. Prépare-toi, le moteur t’attend.</p>
       <p class="sign">Mayline (et Abdel aussi)</p>
@@ -277,8 +275,11 @@ const MISSIONS = [
   { name:"Radio d’équipe", desc:"Mémorise et répète les signaux de ton équipe.", digit:"6" }
 ];
 let done = [];
-try { done = JSON.parse(localStorage.getItem('k30-done') || '[]'); } catch(e){ done = []; }
-function save(){ try { localStorage.setItem('k30-done', JSON.stringify(done)); } catch(e){} }
+try {
+  if (new URLSearchParams(location.search).has('reset')) localStorage.removeItem('k24-done');
+  done = JSON.parse(localStorage.getItem('k24-done') || '[]');
+} catch(e){ done = []; }
+function save(){ try { localStorage.setItem('k24-done', JSON.stringify(done)); } catch(e){} }
 
 function renderHub(){
   const ol = $('#missionList'); ol.innerHTML = '';
@@ -407,7 +408,6 @@ const playerY = () => H - carSize().h - 24;
 const speed = () => H * (0.6 + 0.6 * Math.min(t / DURATION, 1));
 function updHud(){ $('#lives').textContent = '♥'.repeat(lives) + '♡'.repeat(3 - lives); }
 
-/* Bip des feux de départ */
 /* Sons mp3 (fichiers à côté de index.html) */
 const SONS = {};
 ['feu', 'depart', 'rouge', 'jaune', 'blanc', 'bleu', 'erreur'].forEach(n => fetch(n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => { if (b) SONS[n] = b; }).catch(() => {}));
@@ -580,7 +580,7 @@ function tone(freq, ms, type = 'triangle'){
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
   o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
 }
-$('#sStart').addEventListener('click', () => { unlockAudio(); prepareSounds();  $('#sStart').hidden = true; newRound(); });
+$('#sStart').addEventListener('click', () => { unlockAudio(); prepareSounds(); $('#sStart').hidden = true; newRound(); });
 function newRound(){
   seq = Array.from({ length: LENGTHS[round] }, () => Math.floor(Math.random() * 4));
   $('#sRound').textContent = `Message ${round + 1} sur 3`; playSeq();
@@ -605,7 +605,7 @@ pads.forEach((p, i) => p.addEventListener('click', () => {
   unlockAudio();
   if (i !== seq[pos]){
     pads[i].classList.add('lit'); setTimeout(() => pads[i].classList.remove('lit'), 180);
-  stopPadSound(); if (!playSound('erreur')) tone(110, 600, 'sawtooth');
+    stopPadSound(); if (!playSound('erreur')) tone(110, 600, 'sawtooth');
     sState = 'idle'; round = 0;
     $('#sMsg').textContent = 'Signal brouillé. Recommence depuis le premier message.';
     $('#sStart').textContent = 'Réessayer'; $('#sStart').hidden = false; return;
@@ -665,14 +665,12 @@ $('#giveUp').addEventListener('click', reveal);
 /* ---------- Révélation ---------- */
 function reveal(){
   show('reveal');
-  const st = $('#declass'), big = $('#bigReveal'), box = $('#msgBox'), rs = [...document.querySelectorAll('.r')];
-  [st, big, box].forEach(e => e.classList.remove('in')); rs.forEach(x => x.classList.remove('shown'));
-  if (reduce){ [st, big, box].forEach(e => e.classList.add('in')); rs.forEach(x => x.classList.add('shown')); return; }
+  const st = $('#declass'), img = $('#giftImg'), box = $('#msgBox');
+  [st, img, box].forEach(e => e.classList.remove('in'));
+  if (reduce){ [st, img, box].forEach(e => e.classList.add('in')); return; }
   setTimeout(() => { st.classList.add('in'); if (navigator.vibrate) navigator.vibrate(60); }, 300);
-  rs.forEach((x, i) => setTimeout(() => x.classList.add('shown'), 1200 + i * 700));
-  const end = 1200 + rs.length * 700;
-  setTimeout(() => big.classList.add('in'), end + 200);
-  setTimeout(() => box.classList.add('in'), end + 1100);
+  setTimeout(() => img.classList.add('in'), 1200);
+  setTimeout(() => box.classList.add('in'), 2800);
 }
 </script>
 </body>
