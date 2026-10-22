@@ -326,30 +326,63 @@ async function typeIntro(){
   for (const line of lines){
     const p = document.createElement('p'); box.appendChild(p);
     if (reduce || skip){ p.textContent = line; continue; }
-    for (const ch of line){ if (skip){ p.textContent = line; break; } p.textContent += ch; if (ch !== ' ') typeClick(); await wait(24); }
-    if (!skip){ ding(); await wait(260); }
+    for (const ch of line){
+      if (skip){ p.textContent = line; break; }
+      p.textContent += ch;
+      if (ch === ' '){ await wait(40 + Math.random() * 30); continue; }
+      typeClick();
+      await wait(45 + Math.random() * 45 + (',.:;!?…'.includes(ch) ? 180 : 0));
+    }
+    if (!skip){ carriageReturn(); await wait(700); }
   }
   typingDone = true; $('#skipHint').hidden = true;
   $('#accept').hidden = false; $('#accept').focus({preventScroll:true});
 }
 $('#introFolder').addEventListener('click', () => { if (!typingDone) skip = true; });
 $('#accept').addEventListener('click', e => { e.stopPropagation(); goHub(); });
-/* Son de machine à écrire */
+/* Son de machine à écrire : frappe (clac métallique + choc sourd) et retour chariot */
 let noiseBuf = null;
+function noise(){
+  if (!noiseBuf){
+    noiseBuf = actx.createBuffer(1, Math.floor(actx.sampleRate * 0.3), actx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const src = actx.createBufferSource(); src.buffer = noiseBuf; return src;
+}
 function typeClick(){
   if (!actx) return;
-  if (!noiseBuf){
-    noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.03, actx.sampleRate);
-    const d = noiseBuf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
-  }
-  const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
-  src.buffer = noiseBuf; src.playbackRate.value = 0.8 + Math.random() * 0.4;
-  f.type = 'bandpass'; f.frequency.value = 2500 + Math.random() * 1500;
-  g.gain.value = 0.5;
-  src.connect(f).connect(g).connect(actx.destination); src.start();
+  const t0 = actx.currentTime, v = 0.7 + Math.random() * 0.3;
+  // clac : la tige qui frappe le papier
+  const n = noise(), bp = actx.createBiquadFilter(), g1 = actx.createGain();
+  bp.type = 'bandpass'; bp.frequency.value = 1800 + Math.random() * 700; bp.Q.value = 1.2;
+  g1.gain.setValueAtTime(0.18 * v, t0); g1.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.025);
+  n.connect(bp).connect(g1).connect(actx.destination); n.start(t0, Math.random() * 0.2); n.stop(t0 + 0.03);
+  // choc sourd : le rouleau qui encaisse
+  const o = actx.createOscillator(), g2 = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(170, t0); o.frequency.exponentialRampToValueAtTime(70, t0 + 0.05);
+  g2.gain.setValueAtTime(0.22 * v, t0); g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.06);
+  o.connect(g2).connect(actx.destination); o.start(t0); o.stop(t0 + 0.07);
 }
-function ding(){ tone(1568, 400, 'sine'); }
+function carriageReturn(){
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  // petite clochette douce
+  [2093, 2637].forEach((f, i) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(i ? 0.015 : 0.03, t0 + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.8);
+    o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + 0.85);
+  });
+  // glissement du chariot
+  const n = noise(), bp = actx.createBiquadFilter(), g = actx.createGain();
+  bp.type = 'bandpass'; bp.Q.value = 2;
+  bp.frequency.setValueAtTime(600, t0 + 0.15); bp.frequency.linearRampToValueAtTime(1400, t0 + 0.45);
+  g.gain.setValueAtTime(0.0001, t0 + 0.15); g.gain.linearRampToValueAtTime(0.05, t0 + 0.2);
+  g.gain.linearRampToValueAtTime(0.0001, t0 + 0.45);
+  n.connect(bp).connect(g).connect(actx.destination); n.start(t0 + 0.15); n.stop(t0 + 0.46);
+}
 $('#openFile').addEventListener('click', e => {
   e.stopPropagation(); unlockAudio();
   $('#openFile').hidden = true; $('#skipHint').hidden = false;
