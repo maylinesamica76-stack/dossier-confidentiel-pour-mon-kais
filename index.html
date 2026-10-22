@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dossier confidentiel pour Kaïs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#25324A; --paper:#EAD9AB; --ink:#1F1A12; --muted:#5E523D;
+  --rosso:#D10F0F; --on-rosso:#FFF6E6; --redact:#000; --asphalt:#2A2C30; --lane:#EDEBE2;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){ --desk:#0E1420; --paper:#D3C08F; --asphalt:#1E2023; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --desk:#0E1420; --paper:#D3C08F; --asphalt:#1E2023; color-scheme:dark; }
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--desk);color:var(--ink);
+  font-family:"Special Elite","Courier New",Courier,monospace;-webkit-tap-highlight-color:transparent}
+.screen{display:none;height:100%}
+.screen.active{display:flex}
+.display{font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:800}
+button{font:inherit}
+
+/* Dossiers papier */
+.paper-screen{align-items:flex-start;justify-content:center;padding:44px 18px 24px;overflow-y:auto}
+.folder{position:relative;width:100%;max-width:440px;margin:auto;background:var(--paper);
+  padding:34px 24px 28px;border-radius:2px 14px 4px 4px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.folder::before{content:"";position:absolute;top:-18px;left:0;width:150px;height:20px;background:var(--paper);border-radius:8px 8px 0 0}
+.stamp{display:inline-block;font-size:1.7rem;color:var(--rosso);border:3px solid var(--rosso);
+  padding:2px 12px;transform:rotate(-6deg);letter-spacing:.05em;opacity:.9}
+.ref{color:var(--muted);font-size:.88rem;margin:18px 0 20px}
+.typed p{margin:0 0 14px;line-height:1.55;font-size:1.04rem}
+h2.section{font-size:1.6rem;margin:22px 0 10px;line-height:1}
+.go{font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:800;font-size:1.4rem;
+  background:var(--rosso);color:var(--on-rosso);border:0;padding:14px 22px;width:100%;margin-top:12px;
+  cursor:pointer;border-radius:3px;letter-spacing:.02em}
+.go.ghost{background:transparent;color:inherit;border:2px solid currentColor}
+button:focus-visible{outline:3px solid var(--rosso);outline-offset:3px}
+.skip{color:var(--muted);font-size:.8rem;margin:6px 0 0}
+
+.missions{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.mission{width:100%;text-align:left;background:transparent;border:2px solid var(--ink);color:var(--ink);
+  padding:12px 14px;border-radius:3px;cursor:pointer;display:grid;gap:4px}
+.mission:disabled{opacity:.45;cursor:not-allowed;border-style:dashed}
+.mission.ok{border-color:var(--rosso)}
+.m-name{font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:800;font-size:1.3rem}
+.m-desc{font-size:.9rem;line-height:1.4;color:var(--muted)}
+.m-status{font-size:.85rem;color:var(--rosso)}
+
+.code{display:flex;gap:10px;margin:4px 0 6px}
+.code span{width:52px;height:62px;border:2px solid var(--ink);display:grid;place-items:center;
+  font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:800;font-size:2.2rem;background:rgba(255,255,255,.25)}
+.fields{margin:0 0 18px;display:grid;gap:10px}
+.fields > div{display:flex;gap:10px;align-items:baseline;border-bottom:1px dashed var(--muted);padding-bottom:6px}
+.fields .k{color:var(--muted);min-width:7em;font-size:.9rem}
+.empty{color:var(--muted);font-size:.92rem;margin:0}
+.digit{font-size:5.5rem;line-height:1;color:var(--rosso);margin:4px 0 10px}
+
+/* Écrans sombres (jeux) */
+.dark-screen{flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:var(--asphalt);color:var(--lane);text-align:center;padding:24px;position:relative;user-select:none}
+.dark-screen h2{margin:0;font-size:2.3rem;line-height:1}
+.dark-screen p{margin:0;max-width:32ch;line-height:1.5}
+.dark-screen .go{max-width:300px}
+.lights{display:flex;gap:10px}
+.lights b{width:34px;height:34px;border-radius:50%;background:#1a1a1a;border:3px solid #000}
+.lights b.on{background:var(--rosso);box-shadow:0 0 18px var(--rosso)}
+.lights.big b{width:44px;height:44px}
+.time{font-size:3rem;min-height:3rem;color:var(--lane)}
+
+#race{flex-direction:column;background:var(--asphalt);position:relative;user-select:none}
+.hud{display:flex;align-items:center;gap:14px;padding:12px 16px;color:var(--lane);font-size:1.15rem}
+.track{flex:1;height:8px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--rosso)}
+.lives{color:var(--rosso);letter-spacing:2px}
+canvas{flex:1;width:100%;min-height:0;display:block;touch-action:manipulation;cursor:pointer}
+.overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;background:rgba(0,0,0,.65);color:var(--lane);text-align:center;padding:28px}
+.overlay.show{display:flex}
+.overlay h2{margin:0;font-size:2.3rem;line-height:1}
+.overlay p{margin:0;max-width:32ch;line-height:1.5}
+.overlay .go{max-width:300px}
+
+.pads{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(78vw,300px)}
+.pad{aspect-ratio:1;border:0;border-radius:18px;opacity:.35;cursor:pointer;transition:opacity .08s,transform .08s}
+.pad.lit{opacity:1;transform:scale(1.04);box-shadow:0 0 24px currentColor}
+
+.screenv{font-size:2.6rem;letter-spacing:.3em}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(80vw,280px)}
+.key{padding:14px 0;font-size:1.6rem;background:rgba(255,255,255,.08);color:var(--lane);border:2px solid rgba(255,255,255,.25);border-radius:6px;cursor:pointer}
+.key.small{font-size:1rem}
+.vault-display{display:flex;gap:10px}
+.vault-display span{width:56px;height:68px;border:2px solid var(--lane);display:grid;place-items:center;font-size:2.4rem}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+
+/* Mission finale */
+.charade{max-width:34ch;text-align:left;border-left:3px solid var(--rosso);padding:4px 0 4px 14px;display:grid;gap:6px}
+.charade p{max-width:none}
+.charade .q{font-style:italic;margin-top:4px}
+.guess-form{display:grid;gap:10px;width:min(86vw,320px)}
+.guess-form input{font:inherit;font-size:1.2rem;padding:14px;border-radius:4px;border:2px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.08);color:var(--lane);text-align:center}
+.guess-form input:focus{outline:3px solid var(--rosso);outline-offset:2px}
+.guess-form .go{max-width:none;margin-top:0}
+.num296{font-size:4.5rem;line-height:1;color:var(--rosso);letter-spacing:.08em}
+
+/* Révélation */
+.slam{opacity:0}
+.slam.in{animation:slam .45s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes slam{from{transform:scale(3) rotate(-16deg);opacity:0}to{transform:scale(1) rotate(-8deg);opacity:.92}}
+.r{background:var(--redact);color:transparent;padding:0 4px;transition:background .5s,color .5s}
+.r.shown{background:transparent;color:var(--ink)}
+.big{font-size:clamp(2.2rem,9.5vw,3.2rem);line-height:.98;color:var(--rosso);margin:0 0 18px}
+.fade{opacity:0;transform:translateY(10px);transition:opacity .7s,transform .7s}
+.fade.in{opacity:1;transform:none}
+.msg{line-height:1.6;margin:0 0 6px}
+.sign{margin:0 0 8px}
+
+@media (prefers-reduced-motion:reduce){
+  .slam.in{animation:none;opacity:.92;transform:rotate(-8deg)}
+  .fade,.r,.pad{transition:none}
+  .shake{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Intro -->
+<section class="screen paper-screen active" id="intro">
+  <div class="folder" id="introFolder">
+    <span class="stamp display">Top secret</span>
+    <p class="ref">Dossier K-24. Destinataire : agent Kaïs</p>
+    <div class="typed" id="typed" aria-live="polite"></div>
+    <p class="skip" id="skipHint">Touche le dossier pour tout afficher</p>
+    <button class="go" id="accept" hidden>Accepter la mission</button>
+  </div>
+</section>
+
+<!-- Tableau des missions -->
+<section class="screen paper-screen" id="hub">
+  <div class="folder">
+    <span class="stamp display">Top secret</span>
+    <p class="ref">Dossier K-24. Progression de l’agent Kaïs</p>
+    <ol class="missions" id="missionList"></ol>
+    <h2 class="section display">Code du coffre</h2>
+    <div class="code" id="code"></div>
+    <button class="go" id="openVault" hidden>Ouvrir le coffre</button>
+  </div>
+</section>
+
+<!-- Mission 1 : course -->
+<section class="screen" id="race">
+  <div class="hud display">
+    <span class="lives" id="lives" aria-label="Vies restantes">♥♥♥</span>
+    <div class="track" aria-label="Distance jusqu’à l’arrivée"><i id="bar"></i></div>
+    <span>🏁</span>
+  </div>
+  <canvas id="cv" aria-label="Course : touche la gauche ou la droite de l’écran pour changer de voie"></canvas>
+  <div class="overlay" id="lightsOv">
+    <div class="lights"><b></b><b></b><b></b><b></b><b></b></div>
+    <h2 class="display" id="lightsTxt">Prépare-toi</h2>
+    <p>Esquive les voitures noires jusqu’à l’arrivée. Touche la gauche ou la droite de l’écran pour changer de voie (ou utilise les flèches du clavier).</p>
+  </div>
+  <div class="overlay" id="failOv">
+    <h2 class="display">Véhicule intercepté</h2>
+    <p>Les agents ennemis t’ont rattrapé. Le fragment reste verrouillé.</p>
+    <button class="go" id="retry">Retenter la mission</button>
+    <button class="go ghost" data-hub>Retour au dossier</button>
+  </div>
+</section>
+
+<!-- Mission 2 : feux de départ -->
+<section class="screen dark-screen" id="react">
+  <h2 class="display">Départ arrêté</h2>
+  <div class="lights big" id="rLights"><b></b><b></b><b></b><b></b><b></b></div>
+  <div class="time display" id="rTime" aria-live="polite"></div>
+  <p id="rMsg" aria-live="polite"></p>
+  <button class="go" id="rRetry" hidden>Réessayer</button>
+  <button class="go ghost" data-hub>Retour au dossier</button>
+</section>
+
+<!-- Mission 3 : radio d'équipe -->
+<section class="screen dark-screen" id="simon">
+  <h2 class="display">Radio d’équipe</h2>
+  <p id="sRound">Message 1 sur 3</p>
+  <div class="pads" id="pads">
+    <button class="pad" style="background:#D10F0F;color:#D10F0F" aria-label="Rouge"></button>
+    <button class="pad" style="background:#FFD400;color:#FFD400" aria-label="Jaune"></button>
+    <button class="pad" style="background:#EDEBE2;color:#EDEBE2" aria-label="Blanc"></button>
+    <button class="pad" style="background:#2F6FD6;color:#2F6FD6" aria-label="Bleu"></button>
+  </div>
+  <p id="sMsg" aria-live="polite"></p>
+  <button class="go" id="sStart">Écouter le message</button>
+  <button class="go ghost" data-hub>Retour au dossier</button>
+</section>
+
+<!-- Débrief après une mission -->
+<section class="screen paper-screen" id="debrief">
+  <div class="folder">
+    <span class="stamp display slam" id="dStamp">Mission réussie</span>
+    <p class="ref" id="dRef"></p>
+    <p>Fragment du code obtenu :</p>
+    <div class="digit display" id="dDigit"></div>
+    <p id="dNext"></p>
+    <button class="go" data-hub>Retour au dossier</button>
+  </div>
+</section>
+
+<!-- Coffre -->
+<section class="screen dark-screen" id="vault">
+  <h2 class="display">Le coffre</h2>
+  <p id="vMsg">Saisis le code à trois chiffres obtenu pendant tes missions.</p>
+  <div class="vault-display display" id="vDisplay"></div>
+  <div class="keypad" id="keypad"></div>
+  <button class="go ghost" data-hub>Retour au dossier</button>
+</section>
+
+<!-- Mission finale : identification -->
+<section class="screen dark-screen" id="guess">
+  <h2 class="display">Mission finale</h2>
+  <div class="num296 display">296</div>
+  <p>Le coffre est ouvert, mais l’objet est camouflé. Résous cette charade pour l’identifier :</p>
+  <div class="charade">
+    <p>Mon premier est un métal qu’on forge.</p>
+    <p>Mon deuxième est un rongeur à longue queue.</p>
+    <p>Mon troisième, c’est ce que tu as fait à ta dernière blague.</p>
+    <p>Mon tout porte fièrement le nombre 296.</p>
+    <p class="q">Qui suis-je ?</p>
+  </div>
+  <form class="guess-form" id="guessForm" autocomplete="off">
+    <input id="guessIn" type="text" placeholder="Ta réponse" aria-label="Ta réponse" enterkeyhint="send">
+    <button class="go" type="submit">Valider</button>
+  </form>
+  <p id="gMsg" aria-live="polite"></p>
+  <button class="go ghost" id="giveUp" hidden>Je donne ma langue au chat</button>
+  <button class="go ghost" data-hub>Retour au dossier</button>
+</section>
+
+<!-- Révélation -->
+<section class="screen paper-screen" id="reveal">
+  <div class="folder">
+    <span class="stamp display slam" id="declass">Déclassifié</span>
+    <p class="ref">Dossier K-24. Consignes : garder les mains sur le volant, le pied sur l’accélérateur… et revenir en un seul morceau STP !</p>
+    <div class="fields">
+      <div><span class="k">Mission</span><span class="r">Piloter une Ferrari 296 GTB</span></div>
+      <div><span class="k">Terrain</span><span class="r">5 tours de 2 km</span></div>
+      <div><span class="k">Puissance</span><span class="r">830 chevaux</span></div>
+      <div><span class="k">Pilote</span><span class="r">Kaïs AKA Hamilton</span></div>
+    </div>
+    <h1 class="big display fade" id="bigReveal">Tu vas piloter une Ferrari 296 GTB sur circuit.</h1>
+    <div class="fade" id="msgBox">
+      <p class="msg">Joyeux anniversaire, agent. Prépare-toi, le moteur t’attend.</p>
+      <p class="sign">Mayline (et Abdel aussi)</p>
+      <button class="go ghost" data-hub>Revoir le dossier</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const $ = s => document.querySelector(s);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); window.scrollTo(0,0); }
+
+/* ---------- Missions et progression ---------- */
+const MISSIONS = [
+  { name:"Course d’évasion", desc:"Esquive les agents ennemis jusqu’à la ligne d’arrivée.", digit:"2" },
+  { name:"Départ arrêté", desc:"Démarre au moment exact où les feux s’éteignent.", digit:"9" },
+  { name:"Radio d’équipe", desc:"Mémorise et répète les signaux de ton équipe.", digit:"6" }
+];
+let done = [];
+try { done = JSON.parse(localStorage.getItem('k30-done') || '[]'); } catch(e){ done = []; }
+function save(){ try { localStorage.setItem('k30-done', JSON.stringify(done)); } catch(e){} }
+
+function renderHub(){
+  const ol = $('#missionList'); ol.innerHTML = '';
+  MISSIONS.forEach((m, i) => {
+    const ok = done.includes(i), open = i === 0 || done.includes(i - 1);
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.className = 'mission' + (ok ? ' ok' : ''); b.disabled = !open;
+    b.innerHTML = `<span class="m-name">Mission ${i+1} : ${m.name}</span>
+      <span class="m-desc">${open ? m.desc : 'Réussis la mission précédente pour la débloquer.'}</span>
+      <span class="m-status">${ok ? 'Réussie. Toucher pour rejouer' : open ? 'Lancer la mission' : 'Verrouillée'}</span>`;
+    b.addEventListener('click', () => launch(i));
+    li.appendChild(b); ol.appendChild(li);
+  });
+  $('#code').innerHTML = MISSIONS.map((m, i) => `<span>${done.includes(i) ? m.digit : ''}</span>`).join('');
+  $('#openVault').hidden = done.length < 3;
+}
+function goHub(){ stopAll(); renderHub(); show('hub'); }
+document.querySelectorAll('[data-hub]').forEach(b => b.addEventListener('click', goHub));
+function launch(i){ [startRace, startReact, startSimon][i](); }
+function stopAll(){ state = 'idle'; clearTimeout(rTimer); rState = 'idle'; sState = 'idle'; }
+
+function missionWon(i){
+  if (!done.includes(i)) done.push(i); save();
+  const m = MISSIONS[i];
+  $('#dRef').textContent = `Mission ${i+1} : ${m.name}`;
+  $('#dDigit').textContent = m.digit;
+  $('#dNext').textContent = done.length >= 3
+    ? 'Tu as les trois chiffres. Le coffre t’attend dans le dossier.'
+    : 'Retourne au dossier pour lancer la mission suivante.';
+  show('debrief');
+  const st = $('#dStamp'); st.classList.remove('in'); void st.offsetWidth; st.classList.add('in');
+}
+
+/* ---------- Intro ---------- */
+const lines = [
+  "Agent Kaïs,",
+  "Si tu lis ces lignes, c’est que tu as été choisi. Pas par hasard : par l’agente la plus redoutable du service (et accessoirement ta femme).",
+  "Elle a dissimulé un objet de la plus haute importance. Il est enfermé dans un coffre scellé. Pour l’ouvrir, tu devras accomplir trois missions. Chacune te livrera un chiffre du code secret. Réunis-les… et une ultime épreuve t’attendra.",
+  "Ta mission, si tu l’acceptes, commence maintenant.",
+  "Signé : ton agente infiltrée ❤️"
+];
+let skip = false, typingDone = false;
+async function typeIntro(){
+  const box = $('#typed');
+  for (const line of lines){
+    const p = document.createElement('p'); box.appendChild(p);
+    if (reduce || skip){ p.textContent = line; continue; }
+    for (const ch of line){ if (skip){ p.textContent = line; break; } p.textContent += ch; await wait(24); }
+    if (!skip) await wait(260);
+  }
+  typingDone = true; $('#skipHint').hidden = true;
+  $('#accept').hidden = false; $('#accept').focus({preventScroll:true});
+}
+$('#introFolder').addEventListener('click', () => { if (!typingDone) skip = true; });
+$('#accept').addEventListener('click', e => { e.stopPropagation(); goHub(); });
+typeIntro();
+
+/* ---------- Mission 1 : course ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', () => { if ($('#race').classList.contains('active')){ resize(); draw(); } });
+const DURATION = 22;
+let state = 'idle', lane = 1, px = 0, obs = [], t = 0, spawnT = 0, lives = 3, inv = 0, scroll = 0, last = 0;
+const road = () => { const w = Math.min(W * 0.9, 380); return { x:(W - w)/2, w }; };
+const laneX = l => { const r = road(); return r.x + r.w * (l + .5) / 3; };
+const carSize = () => { const w = road().w / 3 * 0.52; return { w, h: w * 1.9 }; };
+const playerY = () => H - carSize().h - 24;
+const speed = () => H * (0.6 + 0.6 * Math.min(t / DURATION, 1));
+function updHud(){ $('#lives').textContent = '♥'.repeat(lives) + '♡'.repeat(3 - lives); }
+
+function startRace(){
+  show('race'); $('#failOv').classList.remove('show'); resize();
+  lane = 1; px = laneX(1); obs = []; t = 0; spawnT = 1; lives = 3; inv = 0; scroll = 0;
+  $('#bar').style.width = '0%'; updHud(); state = 'lights'; draw(); runLights();
+}
+function runLights(){
+  const ov = $('#lightsOv'), bs = [...ov.querySelectorAll('b')], txt = $('#lightsTxt');
+  bs.forEach(b => b.classList.remove('on')); txt.textContent = 'Prépare-toi'; ov.classList.add('show');
+  let i = 0;
+  const step = () => {
+    if (state !== 'lights') return;
+    if (i < 5){ bs[i++].classList.add('on'); setTimeout(step, 550); return; }
+    setTimeout(() => {
+      if (state !== 'lights') return;
+      bs.forEach(b => b.classList.remove('on')); txt.textContent = 'Go !';
+      setTimeout(() => { if (state !== 'lights') return; ov.classList.remove('show'); state = 'run'; last = performance.now(); requestAnimationFrame(loop); }, 450);
+    }, 500);
+  };
+  setTimeout(step, 1800);
+}
+function loop(now){
+  if (state !== 'run') return;
+  const dt = Math.min((now - last) / 1000, 0.05); last = now;
+  update(dt); draw();
+  if (state === 'run') requestAnimationFrame(loop);
+}
+function spawn(){
+  const lanes = [0,1,2].sort(() => Math.random() - .5);
+  const n = (t > 7 && Math.random() < .35) ? 2 : 1;
+  for (let i = 0; i < n; i++) obs.push({ lane: lanes[i], y: -carSize().h });
+}
+function update(dt){
+  t += dt; scroll = (scroll + speed() * dt) % 60;
+  px += (laneX(lane) - px) * Math.min(1, dt * 14);
+  spawnT -= dt;
+  if (spawnT <= 0 && t < DURATION - 1.6){ spawn(); spawnT = Math.max(0.55, 1.15 - t * 0.025) + Math.random() * 0.35; }
+  const cs = carSize(), py = playerY();
+  obs.forEach(o => o.y += speed() * dt);
+  obs = obs.filter(o => o.y < H + cs.h);
+  if (inv > 0) inv -= dt;
+  else for (const o of obs){
+    if (Math.abs(laneX(o.lane) - px) < cs.w * 0.8 && o.y + cs.h > py + 8 && o.y < py + cs.h - 8){
+      o.hit = true; lives--; inv = 1.3; updHud();
+      if (navigator.vibrate) navigator.vibrate(120);
+      if (lives <= 0){ state = 'over'; $('#failOv').classList.add('show'); $('#retry').focus(); }
+      break;
+    }
+  }
+  obs = obs.filter(o => !o.hit);
+  $('#bar').style.width = Math.min(t / DURATION, 1) * 100 + '%';
+  if (t >= DURATION && state === 'run'){ state = 'done'; setTimeout(() => missionWon(0), 700); }
+}
+function rr(x,y,w,h,r){ ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x,y,w,h,r); else ctx.rect(x,y,w,h); }
+function drawCar(cx, y, w, h, me){
+  const x = cx - w/2, ww = w * .18, wh = h * .2;
+  ctx.fillStyle = '#000';
+  [[x - ww*.4, y + h*.14],[x + w - ww*.6, y + h*.14],[x - ww*.4, y + h*.66],[x + w - ww*.6, y + h*.66]]
+    .forEach(([a,b]) => ctx.fillRect(a, b, ww, wh));
+  ctx.fillStyle = me ? '#D10F0F' : '#0B0B0D'; rr(x, y, w, h, w * .35); ctx.fill();
+  if (me){
+    ctx.fillStyle = 'rgba(20,20,25,.85)'; rr(x + w*.15, y + h*.34, w*.7, h*.2, 4); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.fillRect(cx - w*.06, y + h*.6, w*.12, h*.32);
+  } else {
+    ctx.fillStyle = '#5A606B'; rr(x + w*.15, y + h*.62, w*.7, h*.17, 4); ctx.fill();
+    rr(x + w*.18, y + h*.2, w*.64, h*.12, 4); ctx.fill();
+  }
+}
+function draw(){
+  if (!W) return;
+  const r = road(), cs = carSize();
+  ctx.fillStyle = '#1F3324'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#3B3E44'; ctx.fillRect(r.x, 0, r.w, H);
+  const k = 10;
+  for (let y = -60 + scroll; y < H; y += 60){
+    ctx.fillStyle = '#D10F0F'; ctx.fillRect(r.x - k, y, k, 30); ctx.fillRect(r.x + r.w, y, k, 30);
+    ctx.fillStyle = '#EDEBE2'; ctx.fillRect(r.x - k, y + 30, k, 30); ctx.fillRect(r.x + r.w, y + 30, k, 30);
+  }
+  ctx.fillStyle = 'rgba(237,235,226,.5)';
+  for (let l = 1; l < 3; l++){ const x = r.x + r.w * l / 3 - 2; for (let y = -60 + scroll; y < H; y += 60) ctx.fillRect(x, y, 4, 32); }
+  const left = DURATION - t;
+  if (left < 1.6){
+    const fy = (1.6 - left) * speed() - 30, s = r.w / 12;
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 2; j++){
+      ctx.fillStyle = (i + j) % 2 ? '#000' : '#FFF'; ctx.fillRect(r.x + i * s, fy + j * s, s, s);
+    }
+  }
+  obs.forEach(o => drawCar(laneX(o.lane), o.y, cs.w, cs.h, false));
+  if (!(inv > 0 && Math.floor(inv * 10) % 2)) drawCar(px, playerY(), cs.w, cs.h, true);
+}
+function move(d){ if (state === 'run') lane = Math.max(0, Math.min(2, lane + d)); }
+addEventListener('keydown', e => {
+  if (['ArrowLeft','a','q'].includes(e.key)) move(-1);
+  if (['ArrowRight','d'].includes(e.key)) move(1);
+  if (e.key === ' ' && $('#react').classList.contains('active')){ e.preventDefault(); reactTap(); }
+});
+cv.addEventListener('pointerdown', e => { const b = cv.getBoundingClientRect(); move(e.clientX - b.left < b.width / 2 ? -1 : 1); });
+$('#retry').addEventListener('click', startRace);
+
+/* ---------- Mission 2 : feux de départ ---------- */
+let rState = 'idle', rTimer = null, rStart = 0;
+const rLights = $('#rLights');
+function lightsSet(n){ [...rLights.children].forEach((b, i) => b.classList.toggle('on', i < n)); }
+function startReact(){ show('react'); resetReact(); }
+function resetReact(){
+  clearTimeout(rTimer); rState = 'idle'; lightsSet(0);
+  $('#rMsg').textContent = 'Touche l’écran pour lancer les feux, puis touche à nouveau dès qu’ils s’éteignent. Il faut moins de 0,350 s.';
+  $('#rTime').textContent = ''; $('#rRetry').hidden = true;
+}
+function reactTap(){
+  if (rState === 'idle'){
+    rState = 'arming'; $('#rMsg').textContent = 'Attends que les cinq feux s’éteignent…';
+    let n = 0;
+    const step = () => {
+      if (rState !== 'arming') return;
+      lightsSet(++n);
+      if (n < 5) rTimer = setTimeout(step, 600);
+      else rTimer = setTimeout(() => { if (rState !== 'arming') return; lightsSet(0); rState = 'go'; rStart = performance.now(); }, 800 + Math.random() * 1800);
+    };
+    rTimer = setTimeout(step, 500);
+  } else if (rState === 'arming'){
+    clearTimeout(rTimer); rState = 'done'; lightsSet(0);
+    $('#rMsg').textContent = 'Faux départ : tu es parti avant l’extinction des feux.';
+    $('#rRetry').hidden = false;
+  } else if (rState === 'go'){
+    const ms = performance.now() - rStart; rState = 'done';
+    $('#rTime').textContent = (ms / 1000).toFixed(3).replace('.', ',') + ' s';
+    if (ms <= 350){ $('#rMsg').textContent = 'Départ parfait.'; setTimeout(() => missionWon(1), 1300); }
+    else { $('#rMsg').textContent = 'Trop lent : il faut moins de 0,350 s.'; $('#rRetry').hidden = false; }
+  }
+}
+$('#react').addEventListener('pointerdown', e => { if (!e.target.closest('button')) reactTap(); });
+$('#rRetry').addEventListener('click', resetReact);
+
+/* ---------- Mission 3 : radio d'équipe ---------- */
+const pads = [...document.querySelectorAll('.pad')];
+const LENGTHS = [3, 4, 5];
+let seq = [], pos = 0, sState = 'idle', round = 0;
+function startSimon(){
+  show('simon'); sState = 'idle'; round = 0;
+  $('#sRound').textContent = 'Message 1 sur 3';
+  $('#sMsg').textContent = 'Ton équipe va t’envoyer une séquence de signaux. Répète-la dans le même ordre.';
+  $('#sStart').textContent = 'Écouter le message'; $('#sStart').hidden = false;
+}
+const NOTES = [262, 330, 392, 523]; // rouge Do, jaune Mi, blanc Sol, bleu Do aigu
+let actx = null;
+function unlockAudio(){
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch(e){}
+}
+function tone(freq, ms, type = 'triangle'){
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime;
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+}
+$('#sStart').addEventListener('click', () => { unlockAudio(); $('#sStart').hidden = true; newRound(); });
+function newRound(){
+  seq = Array.from({ length: LENGTHS[round] }, () => Math.floor(Math.random() * 4));
+  $('#sRound').textContent = `Message ${round + 1} sur 3`; playSeq();
+}
+async function flash(i, ms){ tone(NOTES[i], ms); pads[i].classList.add('lit'); await wait(ms); pads[i].classList.remove('lit'); }
+async function playSeq(){
+  sState = 'play'; $('#sMsg').textContent = 'Écoute bien…'; await wait(700);
+  for (const c of seq){ if (sState !== 'play') return; await flash(c, 450); await wait(200); }
+  if (sState !== 'play') return;
+  sState = 'input'; pos = 0; $('#sMsg').textContent = 'À toi : répète la séquence.';
+}
+pads.forEach((p, i) => p.addEventListener('click', () => {
+  if (sState !== 'input') return;
+  unlockAudio();
+  if (i !== seq[pos]){
+    pads[i].classList.add('lit'); setTimeout(() => pads[i].classList.remove('lit'), 180);
+    tone(110, 600, 'sawtooth');
+    sState = 'idle'; round = 0;
+    $('#sMsg').textContent = 'Signal brouillé. Recommence depuis le premier message.';
+    $('#sStart').textContent = 'Réessayer'; $('#sStart').hidden = false; return;
+  }
+  flash(i, 220);
+  if (++pos === seq.length){
+    round++;
+    if (round >= LENGTHS.length){ sState = 'done'; $('#sMsg').textContent = 'Message reçu cinq sur cinq.'; setTimeout(() => missionWon(2), 1100); }
+    else { sState = 'wait'; $('#sMsg').textContent = 'Bien reçu. Message suivant…'; setTimeout(newRound, 1000); }
+  }
+}));
+
+/* ---------- Coffre ---------- */
+let entry = '';
+const keypad = $('#keypad');
+['1','2','3','4','5','6','7','8','9','Effacer','0','Valider'].forEach(k => {
+  const b = document.createElement('button');
+  b.className = 'key display' + (k.length > 1 ? ' small' : ''); b.textContent = k;
+  b.addEventListener('click', () => pressKey(k)); keypad.appendChild(b);
+});
+function updVault(){ $('#vDisplay').innerHTML = [0,1,2].map(i => `<span>${entry[i] || ''}</span>`).join(''); }
+function openVault(){ show('vault'); entry = ''; updVault(); $('#vMsg').textContent = 'Saisis le code à trois chiffres obtenu pendant tes missions.'; }
+function pressKey(k){
+  if (k === 'Effacer'){ entry = entry.slice(0, -1); }
+  else if (k === 'Valider'){
+    if (entry === MISSIONS.map(m => m.digit).join('')){ startGuess(); return; }
+    $('#vMsg').textContent = 'Code incorrect. Vérifie les chiffres dans ton dossier.';
+    const d = $('#vDisplay'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake');
+    entry = '';
+  }
+  else if (entry.length < 3){ entry += k; }
+  updVault();
+}
+$('#openVault').addEventListener('click', openVault);
+
+/* ---------- Mission finale : identification ---------- */
+let misses = 0;
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+function startGuess(){
+  show('guess'); misses = 0;
+  $('#guessIn').value = ''; $('#gMsg').textContent = ''; $('#giveUp').hidden = true;
+  $('#guessIn').focus({preventScroll:true});
+}
+$('#guessForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const a = norm($('#guessIn').value);
+  if (!a) return;
+  if (/ferrari|gtb/.test(a)){ $('#gMsg').textContent = 'Identification confirmée.'; $('#guessIn').blur(); setTimeout(reveal, 900); return; }
+  misses++;
+  $('#gMsg').textContent = 'Négatif, agent. Essaie encore.';
+  const f = $('#guessForm'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake');
+  if (misses >= 3) $('#giveUp').hidden = false;
+  $('#guessIn').select();
+});
+$('#giveUp').addEventListener('click', reveal);
+
+/* ---------- Révélation ---------- */
+function reveal(){
+  show('reveal');
+  const st = $('#declass'), big = $('#bigReveal'), box = $('#msgBox'), rs = [...document.querySelectorAll('.r')];
+  [st, big, box].forEach(e => e.classList.remove('in')); rs.forEach(x => x.classList.remove('shown'));
+  if (reduce){ [st, big, box].forEach(e => e.classList.add('in')); rs.forEach(x => x.classList.add('shown')); return; }
+  setTimeout(() => { st.classList.add('in'); if (navigator.vibrate) navigator.vibrate(60); }, 300);
+  rs.forEach((x, i) => setTimeout(() => x.classList.add('shown'), 1200 + i * 700));
+  const end = 1200 + rs.length * 700;
+  setTimeout(() => big.classList.add('in'), end + 200);
+  setTimeout(() => box.classList.add('in'), end + 1100);
+}
+</script>
+</body>
+</html>
