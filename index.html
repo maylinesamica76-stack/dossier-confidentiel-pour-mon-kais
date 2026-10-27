@@ -565,11 +565,11 @@ async function typeIntro(){
     for (const ch of line){
       if (skip){ p.textContent = line; break; }
       p.textContent += ch;
-      if (ch === ' '){ await wait(40 + Math.random() * 30); continue; }
+      if (ch === ' '){ await wait(15 + Math.random() * 15); continue; }
       typeClick();
-      await wait(45 + Math.random() * 45 + (',.:;!?…'.includes(ch) ? 180 : 0));
+      await wait(20 + Math.random() * 20 + (',.:;!?…'.includes(ch) ? 90 : 0));
     }
-    if (!skip){ carriageReturn(); await wait(700); }
+    if (!skip){ carriageReturn(); await wait(350); }
   }
   typingDone = true; $('#skipHint').hidden = true;
   $('#kisses').hidden = false; $('#kisses').classList.add('in');
